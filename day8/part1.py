@@ -1,42 +1,27 @@
-import re
+import itertools as perm
 
-f = open('input.txt', 'rt')
+string = 'abcdefghijklmnopqrstuvwxyz0123456789'
+array = list(perm.product(string, repeat=2))
+for i in range(len(array)):
+    array[i] = '\\x' + array[i][0] + array[i][1]
 
+r_string = ''
+c_string = ''
 
-def instruction():
-    if 'turn off' in line:
-        return lambda x: 0
-    elif 'toggle' in line:
-        return lambda x: (x + 1) % 2
-    elif 'turn on' in line:
-        return lambda x: 1
-    else:
-        return lambda x: x
+with open('input.txt', 'r') as INPUT:
+    for line in INPUT:
+        line = line.strip()
+        r_string += line
+        line = line[1:-1]
+        if '\\\\' in line:
+            line = line.replace('\\\\','*')
+        if '\\"' in line:
+            line = line.replace('\\"','*')
+        for element in array:
+            if element in array:
+                line = line.replace(element, '*')
+        c_string += line
+    value = len(r_string) - len(c_string)
 
-
-matrix = {}
-
-for i in range(1000):
-    for j in range(1000):
-        matrix[(i, j)] = 0
-
-
-for line in f:
-    coordinates = re.match("[\D]*(\d+),(\d+)[\D]*(\d+),(\d+)", line)
-
-    apply = instruction()
-
-    for i in range(int(coordinates.group(1)), int(coordinates.group(3)) + 1):
-        for j in range(int(coordinates.group(2)), int(coordinates.group(4)) + 1):
-            matrix[(i, j)] = apply(matrix[(i, j)])
-
-count = 0
-
-for light in matrix.items():
-    count += light[1]
-
-print(count)
-
-o = open('output1.txt', 'w')
-o.write(str(count))
-o.close()
+with open('output1.txt','w') as OUTPUT:
+    OUTPUT.write(str(value))
